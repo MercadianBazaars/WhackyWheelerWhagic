@@ -15,38 +15,32 @@
         .partial { background-color: yellow; }
         .incorrect { background-color: lightcoral; }
         
+        /* Section 1: Set Symbol Bar */
         #setBarContainer { 
             width: 100%; 
             overflow-x: auto; 
             white-space: nowrap; 
             display: flex; 
-            flex-wrap: nowrap;
+            flex-wrap: wrap;
             justify-content: center;
             margin-bottom: 10px;
         }
-        .set-symbol { width: 40px; height: 40px; margin: 5px; transition: 0.3s; }
+        .set-symbol { width: 30px; height: 30px; margin: 3px; transition: 0.3s; }
         .set-symbol.incorrect { filter: grayscale(1) brightness(0.5); }
         .set-symbol.partial { filter: grayscale(0.5) brightness(0.8); }
-        .setBarRow {
-            display: flex;
-            justify-content: center;
-            flex-wrap: nowrap;
-        }
+
+        /* Section 4: D20 Dice */
+        #d20Container { font-size: 40px; font-weight: bold; margin-top: 20px; }
+        .dice { display: inline-block; transform: rotate(0deg); transition: transform 0.5s ease-in-out; }
     </style>
 </head>
 <body>
-    <h1>Whacky Wheeler Whagic</h1>
-    <div id="setBarContainer">
-        <div class="setBarRow" id="setBarRow1"></div>
-        <div class="setBarRow" id="setBarRow2"></div>
-    </div>
-    <p>Guess the Magic: The Gathering card!</p>
-    <img id="cardImage" src="" alt="Magic Card" />
-    <br>
-    <input type="text" id="guessInput" placeholder="Enter card name...">
-    <button onclick="checkGuess()">Submit Guess</button>
-    <p id="feedback"></p>
     
+    <!-- Section 1: Set Symbol Bar -->
+    <div id="setBarContainer"></div>
+    
+    <!-- Section 2: Guessing Table -->
+    <h2>Previous Guesses</h2>
     <table>
         <thead>
             <tr>
@@ -55,13 +49,27 @@
                 <th>Mana Value</th>
                 <th>Colors</th>
                 <th>Rarity</th>
-                <th>Type / Supertype</th>
+                <th>Type</th>
                 <th>Subtype</th>
                 <th>Set</th>
             </tr>
         </thead>
         <tbody id="guessTableBody"></tbody>
     </table>
+    
+    <!-- Section 3: Hidden Card and Guess Box -->
+    <h1>Whacky Wheeler Whagic</h1>
+    <p>Guess the Magic: The Gathering card!</p>
+    <img id="cardImage" src="" alt="Magic Card" />
+    <br>
+    <input type="text" id="guessInput" placeholder="Enter card name...">
+    <button onclick="checkGuess()">Submit Guess</button>
+    <p id="feedback"></p>
+    
+    <!-- Section 4: D20 Dice -->
+    <div id="d20Container">
+        🎲 <span id="dice" class="dice">20</span>
+    </div>
 
     <script>
         let cardData = null;
@@ -69,6 +77,12 @@
         const maxGuesses = 20;
         const allowedSets = ["lea", "leb", "2ed", "3ed", "4ed", "5ed", "6ed", "7ed", "8ed", "9ed", "10e", "m10", "m11", "m12", "m13", "m14", "m15", "ori", "dmu"];
         
+        document.getElementById("guessInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                checkGuess();
+            }
+        });
+
         function fetchRandomCard() {
             fetch("https://api.scryfall.com/cards/random?q=set:" + allowedSets.join(" OR set:"))
             .then(response => response.json())
@@ -94,24 +108,27 @@
             let row = document.createElement("tr");
             row.innerHTML = `
                 <td>${guesses + 1}</td>
-                <td>${cardData.name}</td>
-                <td>${highlightMatch(cardData.cmc)}</td>
-                <td>${highlightMatch(cardData.colors)}</td>
-                <td>${highlightMatch(cardData.rarity)}</td>
-                <td>${highlightMatch(cardData.type_line)}</td>
-                <td>${highlightMatch(cardData.oracle_text)}</td>
-                <td>${highlightMatch(cardData.set)}</td>
+                <td>${userGuess}</td>
+                <td>${cardData.cmc}</td>
+                <td>${cardData.colors}</td>
+                <td>${cardData.rarity}</td>
+                <td>${cardData.type_line}</td>
+                <td>${cardData.oracle_text}</td>
+                <td>${cardData.set_name}</td>
             `;
             document.getElementById("guessTableBody").appendChild(row);
             
             guesses++;
+            updateDice();
             if (guesses >= maxGuesses) {
                 setTimeout(fetchRandomCard, 2000);
             }
         }
 
-        function highlightMatch(actual) {
-            return `<td>${actual}</td>`;
+        function updateDice() {
+            let dice = document.getElementById("dice");
+            dice.textContent = Math.max(20 - guesses, 0);
+            dice.style.transform = `rotate(${Math.random() * 360}deg)`;
         }
 
         function fetchSetSymbols() {
@@ -119,20 +136,14 @@
             .then(response => response.json())
             .then(data => {
                 let sets = data.data.filter(set => allowedSets.includes(set.code));
-                let row1 = document.getElementById("setBarRow1");
-                let row2 = document.getElementById("setBarRow2");
+                let container = document.getElementById("setBarContainer");
                 
-                sets.forEach((set, index) => {
+                sets.forEach(set => {
                     let img = document.createElement("img");
                     img.src = set.icon_svg_uri;
                     img.classList.add("set-symbol");
                     img.setAttribute("data-set", set.code);
-                    
-                    if (index % 2 === 0) {
-                        row1.appendChild(img);
-                    } else {
-                        row2.appendChild(img);
-                    }
+                    container.appendChild(img);
                 });
             })
             .catch(error => console.error("Error fetching set symbols:", error));
