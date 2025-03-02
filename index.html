@@ -9,6 +9,10 @@
         #cardImage { width: 250px; height: auto; margin: 20px 0; display: none; }
         #guessInput { padding: 10px; margin: 10px; }
         #feedback { font-weight: bold; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid black; padding: 8px; text-align: center; }
+        .correct { background-color: lightgreen; }
+        .partial { background-color: yellow; }
     </style>
 </head>
 <body>
@@ -20,8 +24,24 @@
     <button onclick="checkGuess()">Submit Guess</button>
     <p id="feedback"></p>
     
+    <table>
+        <thead>
+            <tr>
+                <th>Card Name</th>
+                <th>Mana Cost</th>
+                <th>Color</th>
+                <th>Type</th>
+                <th>Set</th>
+                <th>Rarity</th>
+            </tr>
+        </thead>
+        <tbody id="guessTableBody"></tbody>
+    </table>
+
     <script>
         let cardData = null;
+        let guesses = 0;
+        const maxGuesses = 20;
 
         function fetchRandomCard() {
             fetch("https://api.scryfall.com/cards/random?q=set:lea OR set:leb OR set:2ed OR set:3ed OR set:4ed OR set:5ed OR set:6ed OR set:7ed OR set:8ed OR set:9ed OR set:10e OR set:m10 OR set:m11 OR set:m12 OR set:m13 OR set:m14 OR set:m15 OR set:ori OR set:dmu")
@@ -29,28 +49,67 @@
             .then(data => {
                 cardData = data;
                 document.getElementById("cardImage").src = data.image_uris ? data.image_uris.normal : "https://via.placeholder.com/250";
-                document.getElementById("cardImage").style.display = "none"; // Hide the card initially
+                document.getElementById("cardImage").style.display = "none";
+                guesses = 0;
+                document.getElementById("guessTableBody").innerHTML = "";
             })
             .catch(error => console.error("Error fetching card:", error));
         }
 
         function checkGuess() {
+            if (guesses >= maxGuesses) return;
+            
             const userGuess = document.getElementById("guessInput").value.trim().toLowerCase();
             if (!cardData) {
                 document.getElementById("feedback").textContent = "Error: No card data loaded!";
                 return;
             }
 
+            let row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${userGuess}</td>
+                <td>${highlightMatch(userGuess, cardData.mana_cost)}</td>
+                <td>${highlightMatch(userGuess, cardData.colors)}</td>
+                <td>${highlightTypeMatch(userGuess, cardData.type_line)}</td>
+                <td>${highlightMatch(userGuess, cardData.set_name)}</td>
+                <td>${highlightMatch(userGuess, cardData.rarity)}</td>
+            `;
+            document.getElementById("guessTableBody").appendChild(row);
+            
             if (userGuess === cardData.name.toLowerCase()) {
                 document.getElementById("feedback").textContent = "✔ Correct!";
-                document.getElementById("cardImage").style.display = "block"; // Show the card on correct guess
-                setTimeout(fetchRandomCard, 2000); // Load a new card after 2 seconds
+                document.getElementById("cardImage").style.display = "block";
+                setTimeout(fetchRandomCard, 2000);
             } else {
                 document.getElementById("feedback").textContent = "✘ Incorrect, try again!";
             }
+            
+            guesses++;
+            if (guesses >= maxGuesses) {
+                setTimeout(fetchRandomCard, 2000);
+            }
         }
 
-        // Fetch the first random card when the page loads
+        function highlightMatch(guess, actual) {
+            if (!actual) return `<td>${guess}</td>`;
+            return guess.toLowerCase() === actual.toString().toLowerCase()
+                ? `<td class='correct'>${actual}</td>`
+                : `<td>${actual}</td>`;
+        }
+
+        function highlightTypeMatch(guess, actual) {
+            if (!actual) return `<td>${guess}</td>`;
+            const guessedTypes = guess.split(" ");
+            const actualTypes = actual.toLowerCase().split(" ");
+            const isPartial = guessedTypes.some(type => actualTypes.includes(type));
+            
+            return guess.toLowerCase() === actual.toLowerCase()
+                ? `<td class='correct'>${actual}</td>`
+                : isPartial
+                ? `<td class='partial'>${actual}</td>`
+                : `<td>${actual}</td>`;
+        }
+
         fetchRandomCard();
     </script>
 </body>
