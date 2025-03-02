@@ -146,6 +146,12 @@ function addGuessFeedback(guessedName) {
                 document.getElementById("feedback").textContent = "Error: Unable to retrieve guessed card data.";
                 return;
             }
+            
+            const table = document.getElementById("guessTable");
+            if (!table) {
+                createGuessTable();
+            }
+            
             const tableBody = document.querySelector("#guessTable tbody");
             const row = document.createElement("tr");
             
@@ -170,8 +176,31 @@ function addGuessFeedback(guessedName) {
         .catch(error => console.error("Error fetching guessed card data:", error));
 }
 
+function createGuessTable() {
+    const tableContainer = document.createElement("div");
+    tableContainer.innerHTML = `
+        <table id="guessTable" border="1" style="margin: 20px auto; width: 80%; text-align: center;">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Card Name</th>
+                    <th>Mana Value</th>
+                    <th>Colours</th>
+                    <th>Rarity</th>
+                    <th>Type/Supertype</th>
+                    <th>Subtype</th>
+                    <th>Set</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    `;
+    document.body.appendChild(tableContainer);
+}
+
 function clearGuessTable() {
-    document.querySelector("#guessTable tbody").innerHTML = "";
+    const tableBody = document.querySelector("#guessTable tbody");
+    if (tableBody) tableBody.innerHTML = "";
 }
 
 document.getElementById("guessInput").addEventListener("keypress", function(event) {
