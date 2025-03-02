@@ -48,7 +48,7 @@
             if (userGuess === cardData.name.toLowerCase()) {
                 document.getElementById("feedback").textContent = "✔ abused magic!";
                 document.getElementById("cardImage").style.display = "block"; // Show the card on correct guess
-                setTimeout(fetchRandomCard, 2000); // Load a new card after 15 seconds
+                setTimeout(fetchRandomCard, 15000); // Load a new card after 15 seconds
             } else {
                 document.getElementById("feedback").textContent = "✘ uh-oh stinky!";
             }
