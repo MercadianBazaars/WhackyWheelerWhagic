@@ -25,9 +25,14 @@
         // GROUP 1: Game Logic
         let cardData = null;
 
+        // Allowed sets for both game logic and set symbols
+        const allowedSets = [
+            "pvan", "ITP", "POR", "PO2", "PTK", "S99", "S00", "arn", "atq", "leg", "drk", "fem", "hml", "ice", "all", "mir", "vis", "wth", "tmp", "sth", "exo", "usg", "ulg", "uds", "mmq", "nem", "pcy", "inv", "pls", "apc", "ody", "tor", "jud", "ons", "lgn", "scg", "mrd", "dst", "5dn", "chk", "bok", "sok", "rav", "gpt", "dis", "csp", "tsp", "plc", "fut", "lrw", "mor", "shm", "eve", "ala", "con", "arb", "zen", "wwk", "roe", "som", "mbs", "nph", "isd", "dka", "avr", "rtr", "gtc", "dgm", "ths", "bng", "jou", "ktk", "frf", "dtk", "bfz", "ogw", "soi", "emn", "kld", "aer", "akh", "hou", "xln", "rix", "dom", "grn", "rna", "war", "eld", "thb", "iko", "znr", "khm", "stx", "afr", "mid", "vow", "neo", "snc", "dmu", "lea", "leb", "2ed", "3ed", "sum", "4ed", "5ed", "6ed", "7ed", "8ed", "9ed", "10e"
+        ];
+
         // Function to fetch a random card from Scryfall API
         function fetchRandomCard() {
-            fetch("https://api.scryfall.com/cards/random?q=set:lea OR set:leb OR set:2ed OR set:3ed OR set:4ed OR set:5ed OR set:6ed OR set:7ed OR set:8ed OR set:9ed OR set:10e OR set:m10 OR set:m11 OR set:m12 OR set:m13 OR set:m14 OR set:m15 OR set:ori OR set:dmu")
+            fetch(`https://api.scryfall.com/cards/random?q=set:${allowedSets.join(" OR set:")}`)
             .then(response => response.json())
             .then(data => {
                 cardData = data;
@@ -64,58 +69,49 @@
         // Fetch the first random card when the page loads
         fetchRandomCard();
     </script>
-</body>
-  <!-- This Ends Group 1 -->
-</html>
+    <!-- This Ends Group 1 -->
 
-<!-- GROUP 2: Set Symbol Bar -->
-<div id="setSymbolContainer"></div>
+    <!-- GROUP 2: Set Symbol Bar -->
+    <div id="setSymbolContainer"></div>
 
-<script>
-    // GROUP 2: Set Symbol Bar Logic
-    function fetchSetSymbols() {
-        fetch("https://api.scryfall.com/sets")
-        .then(response => response.json())
-        .then(data => {
-            let allowedSets = const allowedSets = [
-    "pvan", "ITP", "POR", "PO2", "PTK", "S99", "S00", "arn", "atq", "leg", "drk", "fem", "hml", "ice", "all", "mir", "vis", "wth", "tmp", "sth", "exo", "usg", "ulg", "uds", "mmq", "nem", "pcy", "inv", "pls", "apc", "ody", "tor", "jud", "ons", "lgn", "scg", "mrd", "dst", "5dn", "chk", "bok", "sok", "rav", "gpt", "dis", "csp", "tsp", "plc", "fut", "lrw", "mor", "shm", "eve", "ala", "con", "arb", "zen", "wwk", "roe", "som", "mbs", "nph", "isd", "dka", "avr", "rtr", "gtc", "dgm", "ths", "bng", "jou", "ktk", "frf", "dtk", "bfz", "ogw", "soi", "emn", "kld", "aer", "akh", "hou", "xln", "rix", "dom", "grn", "rna", "war", "eld", "thb", "iko", "znr", "khm", "stx", "afr", "mid", "vow", "neo", "snc", "dmu", "lea", "leb", "2ed", "3ed", "sum", "4ed", "5ed", "6ed", "7ed",
-"8ed", "9ed", "10e"
-];
-            let sets = data.data.filter(set => allowedSets.includes(set.code));
-            let container = document.getElementById("setSymbolContainer");
-            
-            sets.forEach(set => {
-                let img = document.createElement("img");
-                img.src = set.icon_svg_uri;
-                img.classList.add("set-symbol");
-                img.alt = set.name;
-                container.appendChild(img);
-            });
-        })
-        .catch(error => console.error("Error fetching set symbols:", error));
-    }
+    <script>
+        // GROUP 2: Set Symbol Bar Logic
+        function fetchSetSymbols() {
+            fetch("https://api.scryfall.com/sets")
+            .then(response => response.json())
+            .then(data => {
+                let sets = data.data.filter(set => allowedSets.includes(set.code));
+                let container = document.getElementById("setSymbolContainer");
+                
+                sets.forEach(set => {
+                    let img = document.createElement("img");
+                    img.src = set.icon_svg_uri;
+                    img.classList.add("set-symbol");
+                    img.alt = set.name;
+                    container.appendChild(img);
+                });
+            })
+            .catch(error => console.error("Error fetching set symbols:", error));
+        }
 
-    fetchSetSymbols();
-    
-</script>
-
-<style>
-    /* GROUP 2: Set Symbol Bar Styles */
-    #setSymbolContainer {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        max-width: 100%;
-        padding: 10px 0;
-    }
-    .set-symbol {
-        width: 18px;
-        height: 18px;
-        margin: 2px;
-    }
-</style>
+        fetchSetSymbols();
     </script>
-</body>
-  <!-- This Ends Group 2 -->
-</html>
 
+    <style>
+        /* GROUP 2: Set Symbol Bar Styles */
+        #setSymbolContainer {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 100%;
+            padding: 10px 0;
+        }
+        .set-symbol {
+            width: 18px;
+            height: 18px;
+            margin: 2px;
+        }
+    </style>
+    <!-- This Ends Group 2 -->
+</body>
+</html>
