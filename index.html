@@ -9,55 +9,9 @@
         #cardImage { width: 250px; height: auto; margin: 20px 0; display: none; }
         #guessInput { padding: 10px; margin: 10px; }
         #feedback { font-weight: bold; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid black; padding: 8px; text-align: center; }
-        .correct { background-color: lightgreen; }
-        .partial { background-color: yellow; }
-        .incorrect { background-color: lightcoral; }
-        
-        /* Section 1: Set Symbol Bar */
-        #setBarContainer { 
-            width: 100%; 
-            overflow-x: auto; 
-            white-space: nowrap; 
-            display: flex; 
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-bottom: 10px;
-        }
-        .set-symbol { width: 30px; height: 30px; margin: 3px; transition: 0.3s; }
-        .set-symbol.incorrect { filter: grayscale(1) brightness(0.5); }
-        .set-symbol.partial { filter: grayscale(0.5) brightness(0.8); }
-
-        /* Section 4: D20 Dice */
-        #d20Container { font-size: 40px; font-weight: bold; margin-top: 20px; }
-        .dice { display: inline-block; transform: rotate(0deg); transition: transform 0.5s ease-in-out; }
     </style>
 </head>
 <body>
-    
-    <!-- Section 1: Set Symbol Bar -->
-    <div id="setBarContainer"></div>
-    
-    <!-- Section 2: Guessing Table -->
-    <h2>Previous Guesses</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Card Name</th>
-                <th>Mana Value</th>
-                <th>Colors</th>
-                <th>Rarity</th>
-                <th>Type</th>
-                <th>Subtype</th>
-                <th>Set</th>
-            </tr>
-        </thead>
-        <tbody id="guessTableBody"></tbody>
-    </table>
-    
-    <!-- Section 3: Hidden Card and Guess Box -->
     <h1>Whacky Wheeler Whagic</h1>
     <p>Guess the Magic: The Gathering card!</p>
     <img id="cardImage" src="" alt="Magic Card" />
@@ -66,90 +20,37 @@
     <button onclick="checkGuess()">Submit Guess</button>
     <p id="feedback"></p>
     
-    <!-- Section 4: D20 Dice -->
-    <div id="d20Container">
-        🎲 <span id="dice" class="dice">20</span>
-    </div>
-
     <script>
         let cardData = null;
-        let guesses = 0;
-        const maxGuesses = 20;
-        const allowedSets = ["lea", "leb", "2ed", "3ed", "4ed", "5ed", "6ed", "7ed", "8ed", "9ed", "10e", "m10", "m11", "m12", "m13", "m14", "m15", "ori", "dmu"];
-        
-        document.getElementById("guessInput").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                checkGuess();
-            }
-        });
 
         function fetchRandomCard() {
-            fetch("https://api.scryfall.com/cards/random?q=set:" + allowedSets.join(" OR set:"))
+            fetch("https://api.scryfall.com/cards/random?q=set:lea OR set:leb OR set:2ed OR set:3ed OR set:4ed OR set:5ed OR set:6ed OR set:7ed OR set:8ed OR set:9ed OR set:10e OR set:m10 OR set:m11 OR set:m12 OR set:m13 OR set:m14 OR set:m15 OR set:ori OR set:dmu")
             .then(response => response.json())
             .then(data => {
                 cardData = data;
                 document.getElementById("cardImage").src = data.image_uris ? data.image_uris.normal : "https://via.placeholder.com/250";
-                document.getElementById("cardImage").style.display = "none";
-                guesses = 0;
-                document.getElementById("guessTableBody").innerHTML = "";
+                document.getElementById("cardImage").style.display = "none"; // Hide the card initially
             })
             .catch(error => console.error("Error fetching card:", error));
         }
 
         function checkGuess() {
-            if (guesses >= maxGuesses) return;
-            
             const userGuess = document.getElementById("guessInput").value.trim().toLowerCase();
             if (!cardData) {
                 document.getElementById("feedback").textContent = "Error: No card data loaded!";
                 return;
             }
 
-            let row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${guesses + 1}</td>
-                <td>${userGuess}</td>
-                <td>${cardData.cmc}</td>
-                <td>${cardData.colors}</td>
-                <td>${cardData.rarity}</td>
-                <td>${cardData.type_line}</td>
-                <td>${cardData.oracle_text}</td>
-                <td>${cardData.set_name}</td>
-            `;
-            document.getElementById("guessTableBody").appendChild(row);
-            
-            guesses++;
-            updateDice();
-            if (guesses >= maxGuesses) {
-                setTimeout(fetchRandomCard, 2000);
+            if (userGuess === cardData.name.toLowerCase()) {
+                document.getElementById("feedback").textContent = "✔ Correct!";
+                document.getElementById("cardImage").style.display = "block"; // Show the card on correct guess
+                setTimeout(fetchRandomCard, 2000); // Load a new card after 2 seconds
+            } else {
+                document.getElementById("feedback").textContent = "✘ Incorrect, try again!";
             }
         }
 
-        function updateDice() {
-            let dice = document.getElementById("dice");
-            dice.textContent = Math.max(20 - guesses, 0);
-            dice.style.transform = `rotate(${Math.random() * 360}deg)`;
-        }
-
-        function fetchSetSymbols() {
-            fetch("https://api.scryfall.com/sets")
-            .then(response => response.json())
-            .then(data => {
-                let sets = data.data.filter(set => allowedSets.includes(set.code));
-                let container = document.getElementById("setBarContainer");
-                
-                sets.forEach(set => {
-                    let img = document.createElement("img");
-                    img.src = set.icon_svg_uri;
-                    img.classList.add("set-symbol");
-                    img.setAttribute("data-set", set.code);
-                    container.appendChild(img);
-                });
-            })
-            .catch(error => console.error("Error fetching set symbols:", error));
-        }
-
-        fetchSetSymbols();
+        // Fetch the first random card when the page loads
         fetchRandomCard();
     </script>
 </body>
