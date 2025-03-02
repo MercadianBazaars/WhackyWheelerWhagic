@@ -12,17 +12,20 @@
     </style>
 </head>
 <body>
+    <!-- GROUP 1: Hidden Card and Guess Box -->
     <h1>Whacky Wheeler Whagic</h1>
     <p>Guess the Magic: The Gathering card!</p>
     <img id="cardImage" src="" alt="Magic Card" />
     <br>
-    <input type="text" id="guessInput" placeholder="Enter card name...">
+    <input type="text" id="guessInput" placeholder="Nyx Weaver">
     <button onclick="checkGuess()">Submit Guess</button>
     <p id="feedback"></p>
     
     <script>
+        // GROUP 1: Game Logic
         let cardData = null;
 
+        // Function to fetch a random card from Scryfall API
         function fetchRandomCard() {
             fetch("https://api.scryfall.com/cards/random?q=set:lea OR set:leb OR set:2ed OR set:3ed OR set:4ed OR set:5ed OR set:6ed OR set:7ed OR set:8ed OR set:9ed OR set:10e OR set:m10 OR set:m11 OR set:m12 OR set:m13 OR set:m14 OR set:m15 OR set:ori OR set:dmu")
             .then(response => response.json())
@@ -34,6 +37,7 @@
             .catch(error => console.error("Error fetching card:", error));
         }
 
+        // Function to check the user's guess
         function checkGuess() {
             const userGuess = document.getElementById("guessInput").value.trim().toLowerCase();
             if (!cardData) {
@@ -42,16 +46,24 @@
             }
 
             if (userGuess === cardData.name.toLowerCase()) {
-                document.getElementById("feedback").textContent = "✔ Correct!";
+                document.getElementById("feedback").textContent = "✔ abused magic!";
                 document.getElementById("cardImage").style.display = "block"; // Show the card on correct guess
-                setTimeout(fetchRandomCard, 2000); // Load a new card after 2 seconds
+                setTimeout(fetchRandomCard, 2000); // Load a new card after 15 seconds
             } else {
-                document.getElementById("feedback").textContent = "✘ Incorrect, try again!";
+                document.getElementById("feedback").textContent = "✘ uh-oh stinky!";
             }
         }
+
+        // ✅ Add Enter key event listener to input field
+        document.getElementById("guessInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                checkGuess(); // Call the function to check the guess
+            }
+        });
 
         // Fetch the first random card when the page loads
         fetchRandomCard();
     </script>
 </body>
+  <!-- This Ends Group 1 -->
 </html>
