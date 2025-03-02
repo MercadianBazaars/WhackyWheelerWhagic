@@ -24,6 +24,30 @@
     </style>
 </head>
 <body>
+    <!-- GROUP 2: Set Symbol Bar Logic and Styles -->
+    <div id="setSymbolContainer"></div>
+    <script>
+        function fetchSetSymbols() {
+            fetch("https://api.scryfall.com/sets")
+            .then(response => response.json())
+            .then(data => {
+                let sets = data.data.filter(set => allowedSets.includes(set.code));
+                let container = document.getElementById("setSymbolContainer");
+                sets.forEach(set => {
+                    let img = document.createElement("img");
+                    img.src = set.icon_svg_uri;
+                    img.classList.add("set-symbol");
+                    img.alt = set.name;
+                    container.appendChild(img);
+                    console.log("Set symbol added:", set.name); // Debugging: Log each set symbol added
+                });
+            })
+            .catch(error => console.error("Error fetching set symbols:", error));
+        }
+        fetchSetSymbols();
+    </script>
+    <!-- This Ends Group 2 -->
+
     <!-- GROUP 0: Page Title and Guess Input -->
     <h1>Whacky Wheeler Whagic</h1>
     <p>Guess the Magic: The Gathering card!</p>
@@ -85,30 +109,5 @@
         fetchRandomCard();
     </script>
     <!-- This Ends Group 1 -->
-
-    <!-- GROUP 2: Set Symbol Bar Logic and Styles -->
-    <div id="setSymbolContainer"></div>
-    <script>
-        function fetchSetSymbols() {
-            fetch("https://api.scryfall.com/sets")
-            .then(response => response.json())
-            .then(data => {
-                let sets = data.data.filter(set => allowedSets.includes(set.code));
-                let container = document.getElementById("setSymbolContainer");
-                sets.forEach(set => {
-                    let img = document.createElement("img");
-                    img.src = set.icon_svg_uri;
-                    img.classList.add("set-symbol");
-                    img.alt = set.name;
-                    container.appendChild(img);
-                    console.log("Set symbol added:", set.name); // Debugging: Log each set symbol added
-                });
-            })
-            .catch(error => console.error("Error fetching set symbols:", error));
-        }
-
-        fetchSetSymbols();
-    </script>
-    <!-- This Ends Group 2 -->
 </body>
 </html>
