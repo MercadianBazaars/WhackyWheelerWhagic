@@ -67,3 +67,52 @@
 </body>
   <!-- This Ends Group 1 -->
 </html>
+
+<!-- GROUP 2: Set Symbol Bar -->
+<div id="setSymbolContainer"></div>
+
+<script>
+    // GROUP 2: Set Symbol Bar Logic
+    function fetchSetSymbols() {
+        fetch("https://api.scryfall.com/sets")
+        .then(response => response.json())
+        .then(data => {
+            let allowedSets = ["lea", "leb", "2ed", "3ed", "4ed", "5ed", "6ed", "7ed", "8ed", "9ed", "10e", "m10", "m11", "m12", "m13", "m14", "m15", "ori", "dmu"];
+            let sets = data.data.filter(set => allowedSets.includes(set.code));
+            let container = document.getElementById("setSymbolContainer");
+            
+            sets.forEach(set => {
+                let img = document.createElement("img");
+                img.src = set.icon_svg_uri;
+                img.classList.add("set-symbol");
+                img.alt = set.name;
+                container.appendChild(img);
+            });
+        })
+        .catch(error => console.error("Error fetching set symbols:", error));
+    }
+
+    fetchSetSymbols();
+    
+</script>
+
+<style>
+    /* GROUP 2: Set Symbol Bar Styles */
+    #setSymbolContainer {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        max-width: 100%;
+        padding: 10px 0;
+    }
+    .set-symbol {
+        width: 18px;
+        height: 18px;
+        margin: 2px;
+    }
+</style>
+    </script>
+</body>
+  <!-- This Ends Group 2 -->
+</html>
+
