@@ -142,6 +142,10 @@ function addGuessFeedback(guessedName) {
     fetch(`https://api.scryfall.com/cards/named?fuzzy=${guessedName}`)
         .then(response => response.json())
         .then(guessedCard => {
+            if (!guessedCard || !cardData) {
+                document.getElementById("feedback").textContent = "Error: Unable to retrieve guessed card data.";
+                return;
+            }
             const tableBody = document.querySelector("#guessTable tbody");
             const row = document.createElement("tr");
             
@@ -154,11 +158,11 @@ function addGuessFeedback(guessedName) {
             row.innerHTML = `
                 <td>${guessCount}</td>
                 <td>${guessedCard.name}</td>
-                <td class="${getFeedbackClass(cardData.cmc, guessedCard.cmc, 2)}">${guessedCard.cmc} ${guessedCard.cmc > cardData.cmc ? '⬇️' : '⬆️'}</td>
-                <td class="${getFeedbackClass(cardData.color_identity.join(), guessedCard.color_identity.join(), null)}">${guessedCard.color_identity.join(", ")}</td>
+                <td class="${getFeedbackClass(cardData.cmc, guessedCard.cmc, 2)}">${guessedCard.cmc} ${(guessedCard.cmc > cardData.cmc ? '&darr;' : '&uarr;')}</td>
+                <td class="${getFeedbackClass(cardData.color_identity.join(), guessedCard.color_identity.join(), null)}">${guessedCard.color_identity.join(", ") || "None"}</td>
                 <td class="${getFeedbackClass(cardData.rarity, guessedCard.rarity, 1)}">${guessedCard.rarity}</td>
                 <td class="${getFeedbackClass(cardData.type_line, guessedCard.type_line, null)}">${guessedCard.type_line}</td>
-                <td class="${getFeedbackClass(cardData.oracle_text, guessedCard.oracle_text, null)}">${guessedCard.oracle_text}</td>
+                <td class="${getFeedbackClass(cardData.oracle_text, guessedCard.oracle_text, null)}">${guessedCard.oracle_text || "N/A"}</td>
                 <td class="${getFeedbackClass(cardData.set, guessedCard.set, null)}">${guessedCard.set.toUpperCase()}</td>
             `;
             tableBody.appendChild(row);
