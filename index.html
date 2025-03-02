@@ -13,10 +13,16 @@
         th, td { border: 1px solid black; padding: 8px; text-align: center; }
         .correct { background-color: lightgreen; }
         .partial { background-color: yellow; }
+        .incorrect { background-color: lightcoral; }
+        #setBar { display: flex; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+        .set-symbol { width: 40px; height: 40px; margin: 5px; filter: grayscale(0); transition: 0.3s; }
+        .set-symbol.incorrect { filter: grayscale(1) brightness(0.5); }
+        .set-symbol.partial { filter: grayscale(0.5) brightness(0.8); }
     </style>
 </head>
 <body>
     <h1>Whacky Wheeler Whagic</h1>
+    <div id="setBar"></div>
     <p>Guess the Magic: The Gathering card!</p>
     <img id="cardImage" src="" alt="Magic Card" />
     <br>
@@ -27,12 +33,14 @@
     <table>
         <thead>
             <tr>
+                <th>#</th>
                 <th>Card Name</th>
-                <th>Mana Cost</th>
-                <th>Color</th>
-                <th>Type</th>
-                <th>Set</th>
+                <th>Mana Value</th>
+                <th>Colours</th>
                 <th>Rarity</th>
+                <th>Type / Supertype</th>
+                <th>Subtype</th>
+                <th>Set</th>
             </tr>
         </thead>
         <tbody id="guessTableBody"></tbody>
@@ -42,6 +50,7 @@
         let cardData = null;
         let guesses = 0;
         const maxGuesses = 20;
+        let setSymbols = {};
 
         function fetchRandomCard() {
             fetch("https://api.scryfall.com/cards/random?q=set:lea OR set:leb OR set:2ed OR set:3ed OR set:4ed OR set:5ed OR set:6ed OR set:7ed OR set:8ed OR set:9ed OR set:10e OR set:m10 OR set:m11 OR set:m12 OR set:m13 OR set:m14 OR set:m15 OR set:ori OR set:dmu")
@@ -67,22 +76,16 @@
 
             let row = document.createElement("tr");
             row.innerHTML = `
+                <td>${guesses + 1}</td>
                 <td>${userGuess}</td>
-                <td>${highlightMatch(userGuess, cardData.mana_cost)}</td>
+                <td>${highlightMatch(userGuess, cardData.cmc)}</td>
                 <td>${highlightMatch(userGuess, cardData.colors)}</td>
-                <td>${highlightTypeMatch(userGuess, cardData.type_line)}</td>
-                <td>${highlightMatch(userGuess, cardData.set_name)}</td>
                 <td>${highlightMatch(userGuess, cardData.rarity)}</td>
+                <td>${highlightTypeMatch(userGuess, cardData.type_line)}</td>
+                <td>${highlightMatch(userGuess, cardData.oracle_text)}</td>
+                <td>${highlightSetMatch(userGuess, cardData.set)}</td>
             `;
             document.getElementById("guessTableBody").appendChild(row);
-            
-            if (userGuess === cardData.name.toLowerCase()) {
-                document.getElementById("feedback").textContent = "✔ Correct!";
-                document.getElementById("cardImage").style.display = "block";
-                setTimeout(fetchRandomCard, 2000);
-            } else {
-                document.getElementById("feedback").textContent = "✘ Incorrect, try again!";
-            }
             
             guesses++;
             if (guesses >= maxGuesses) {
@@ -91,18 +94,15 @@
         }
 
         function highlightMatch(guess, actual) {
-            if (!actual) return `<td>${guess}</td>`;
             return guess.toLowerCase() === actual.toString().toLowerCase()
                 ? `<td class='correct'>${actual}</td>`
                 : `<td>${actual}</td>`;
         }
 
         function highlightTypeMatch(guess, actual) {
-            if (!actual) return `<td>${guess}</td>`;
             const guessedTypes = guess.split(" ");
             const actualTypes = actual.toLowerCase().split(" ");
             const isPartial = guessedTypes.some(type => actualTypes.includes(type));
-            
             return guess.toLowerCase() === actual.toLowerCase()
                 ? `<td class='correct'>${actual}</td>`
                 : isPartial
@@ -110,6 +110,31 @@
                 : `<td>${actual}</td>`;
         }
 
+        function highlightSetMatch(guess, actual) {
+            let element = document.querySelector(`[data-set='${actual}']`);
+            if (element) element.classList.add('correct');
+            return guess.toLowerCase() === actual.toLowerCase()
+                ? `<td class='correct'>${actual}</td>`
+                : `<td>${actual}</td>`;
+        }
+
+        function fetchSetSymbols() {
+            fetch("https://api.scryfall.com/sets")
+            .then(response => response.json())
+            .then(data => {
+                let setBar = document.getElementById("setBar");
+                data.data.forEach(set => {
+                    let img = document.createElement("img");
+                    img.src = set.icon_svg_uri;
+                    img.classList.add("set-symbol");
+                    img.setAttribute("data-set", set.code);
+                    setBar.appendChild(img);
+                });
+            })
+            .catch(error => console.error("Error fetching set symbols:", error));
+        }
+
+        fetchSetSymbols();
         fetchRandomCard();
     </script>
 </body>
