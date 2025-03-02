@@ -132,6 +132,7 @@ function checkGuess() {
         document.getElementById("feedback").textContent = "✔ Correct!";
         document.getElementById("cardImage").style.display = "block";
         setTimeout(fetchRandomCard, 15000);
+        clearGuessTable();
     } else {
         addGuessFeedback(userGuess);
     }
@@ -165,6 +166,10 @@ function addGuessFeedback(guessedName) {
         .catch(error => console.error("Error fetching guessed card data:", error));
 }
 
+function clearGuessTable() {
+    document.querySelector("#guessTable tbody").innerHTML = "";
+}
+
 document.getElementById("guessInput").addEventListener("keypress", function(event) {
     if (event.key === "Enter") {
         checkGuess();
@@ -172,4 +177,3 @@ document.getElementById("guessInput").addEventListener("keypress", function(even
 });
 
 /* ===================== END OF GROUP 3 ===================== */
-
