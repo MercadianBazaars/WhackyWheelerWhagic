@@ -6,7 +6,7 @@
     <title>Whacky Wheeler Whagic</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-        #cardImage { width: 250px; height: auto; margin: 20px auto; display: none; }
+        #cardImage { width: 250px; height: auto; margin: 20px 0; display: none; }
         #guessInput { padding: 10px; margin: 10px; }
         #feedback { font-weight: bold; margin-top: 10px; }
         #setSymbolContainer {
@@ -24,28 +24,9 @@
     </style>
 </head>
 <body>
-    <!-- Begin Group 1: Hidden Card and Guess Box -->
-    <h1>Whacky Wheeler Whagic</h1>
-    <p>Guess the Magic: The Gathering card!</p>
-    <img id="cardImage" src="" alt="Magic Card" />
-    <br>
-    <input type="text" id="guessInput" placeholder="Nyx Weaver">
-    <button onclick="checkGuess()">Submit Guess</button>
-    <p id="feedback"></p>
-    <!-- End Group 1 -->
-
-    <!-- Begin Group 2: Set Symbol Bar -->
+    <!-- GROUP 2: Set Symbol Bar Logic and Styles -->
     <div id="setSymbolContainer"></div>
-    <!-- End Group 2 -->
-
-    <!-- JavaScript for Game Logic and Set Symbols -->
     <script>
-        // Allowed sets for both game logic and set symbols
-        const allowedSets = [
-            "pvan", "ITP", "POR", "PO2", "PTK", "S99", "S00", "arn", "atq", "leg", "drk", "fem", "hml", "ice", "all", "mir", "vis", "wth", "tmp", "sth", "exo", "usg", "ulg", "uds", "mmq", "nem", "pcy", "inv", "pls", "apc", "ody", "tor", "jud", "ons", "lgn", "scg", "mrd", "dst", "5dn", "chk", "bok", "sok", "rav", "gpt", "dis", "csp", "tsp", "plc", "fut", "lrw", "mor", "shm", "eve", "ala", "con", "arb", "zen", "wwk", "roe", "som", "mbs", "nph", "isd", "dka", "avr", "rtr", "gtc", "dgm", "ths", "bng", "jou", "ktk", "frf", "dtk", "bfz", "ogw", "soi", "emn", "kld", "aer", "akh", "hou", "xln", "rix", "dom", "grn", "rna", "war", "eld", "thb", "iko", "znr", "khm", "stx", "afr", "mid", "vow", "neo", "snc", "dmu", "lea", "leb", "2ed", "3ed", "sum", "4ed", "5ed", "6ed", "7ed", "8ed", "9ed", "10e"
-        ];
-
-        // Function to fetch set symbols
         function fetchSetSymbols() {
             fetch("https://api.scryfall.com/sets")
             .then(response => response.json())
@@ -58,14 +39,31 @@
                     img.classList.add("set-symbol");
                     img.alt = set.name;
                     container.appendChild(img);
+                    console.log("Set symbol added:", set.name); // Debugging: Log each set symbol added
                 });
             })
             .catch(error => console.error("Error fetching set symbols:", error));
         }
         fetchSetSymbols();
+    </script>
+    <!-- This Ends Group 2 -->
 
-        // Game logic for fetching cards and checking guesses
+    <!-- GROUP 0: Page Title and Guess Input -->
+    <h1>Whacky Wheeler Whagic</h1>
+    <p>Guess the Magic: The Gathering card!</p>
+    <img id="cardImage" src="" alt="Magic Card" />
+    <br>
+    <input type="text" id="guessInput" placeholder="Enter card name">
+    <button onclick="checkGuess()">Submit Guess</button>
+    <p id="feedback"></p>
+    <!-- This Ends Group 0 -->
+
+    <!-- GROUP 1: Game Logic -->
+    <script>
         let cardData = null;
+        const allowedSets = [
+            "pvan", "ITP", "POR", "PO2", "PTK", "S99", "S00", "arn", "atq", "leg", "drk", "fem", "hml", "ice", "all", "mir", "vis", "wth", "tmp", "sth", "exo", "usg", "ulg", "uds", "mmq", "nem", "pcy", "inv", "pls", "apc", "ody", "tor", "jud", "ons", "lgn", "scg", "mrd", "dst", "5dn", "chk", "bok", "sok", "rav", "gpt", "dis", "csp", "tsp", "plc", "fut", "lrw", "mor", "shm", "eve", "ala", "con", "arb", "zen", "wwk", "roe", "som", "mbs", "nph", "isd", "dka", "avr", "rtr", "gtc", "dgm", "ths", "bng", "jou", "ktk", "frf", "dtk", "bfz", "ogw", "soi", "emn", "kld", "aer", "akh", "hou", "xln", "rix", "dom", "grn", "rna", "war", "eld", "thb", "iko", "znr", "khm", "stx", "afr", "mid", "vow", "neo", "snc", "dmu", "lea", "leb", "2ed", "3ed", "sum", "4ed", "5ed", "6ed", "7ed", "8ed", "9ed", "10e"
+        ];
 
         function fetchRandomCard() {
             fetch(`https://api.scryfall.com/cards/random?q=set:${allowedSets.join(" OR set:")}`)
@@ -74,33 +72,42 @@
                 cardData = data;
                 document.getElementById("cardImage").src = data.image_uris ? data.image_uris.normal : "https://via.placeholder.com/250";
                 document.getElementById("cardImage").style.display = "none"; // Hide the card initially
+                console.log("Random card fetched"); // Debugging: Log when a card is fetched
             })
             .catch(error => console.error("Error fetching card:", error));
         }
 
         function checkGuess() {
             const userGuess = document.getElementById("guessInput").value.trim().toLowerCase();
+            console.log("User guess:", userGuess); // Debugging: Log the user guess
+
             if (!cardData) {
                 document.getElementById("feedback").textContent = "Error: No card data loaded!";
                 return;
             }
 
             if (userGuess === cardData.name.toLowerCase()) {
-                document.getElementById("feedback").textContent = "✔ Correct!";
-                document.getElementById("cardImage").style.display = "block"; // Show the card on correct guess
-                setTimeout(fetchRandomCard, 15000); // Fetch a new card after 15 seconds
+                document.getElementById("feedback").textContent = "✔ abused magic!";
+                document.getElementById("cardImage").style.display = "block";
+                setTimeout(fetchRandomCard, 15000);
             } else {
-                document.getElementById("feedback").textContent = "✘ Wrong!";
+                document.getElementById("feedback").textContent = "✘ uh-oh stinky!";
+                setTimeout(function() {
+                    document.getElementById("feedback").textContent = ""; // Clear the feedback message after 2 seconds
+                    console.log("Feedback cleared"); // Debugging: Log when the feedback is cleared
+                }, 2000);
             }
         }
 
         document.getElementById("guessInput").addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
-                checkGuess(); // Trigger guess check on Enter key
+                checkGuess();
             }
         });
 
-        fetchRandomCard(); // Fetch the first random card when the page loads
+        // Fetch the first random card when the page loads
+        fetchRandomCard();
     </script>
+    <!-- This Ends Group 1 -->
 </body>
 </html>
