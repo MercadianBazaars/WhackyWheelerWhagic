@@ -19,6 +19,9 @@
         .set-symbol { width: 18px; height: 18px; margin: 2px; }
         .correct { color: green; }
         .incorrect { color: red; }
+        .almost-correct { color: orange; }
+        .higher { color: blue; }
+        .lower { color: purple; }
         .guess-table { width: 100%; margin-top: 20px; }
         th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
     </style>
@@ -27,13 +30,13 @@
     <!-- GROUP 2: Set Symbol Bar Logic and Styles - Start -->
     <div id="setSymbolContainer"></div>
     <script>
+        const allowedSets = [
+            "pvan", "ITP", "POR", "PO2", "PTK", "S99", "S00", "arn", "atq", "leg", "drk", "fem", "hml", "ice", "all", "mir", "vis", "wth", "tmp", "sth", "exo", "usg", "ulg", "uds", "mmq", "nem", "pcy", "inv", "pls", "apc", "ody", "tor", "jud", "ons", "lgn", "scg", "mrd", "dst", "5dn", "chk", "bok", "sok", "rav", "gpt", "dis", "csp", "tsp", "plc", "fut", "lrw", "mor", "shm", "eve", "ala", "con", "arb", "zen", "wwk", "roe", "som", "mbs", "nph", "isd", "dka", "avr", "rtr", "gtc", "dgm", "ths", "bng", "jou", "ktk", "frf", "dtk", "bfz", "ogw", "soi", "emn", "kld", "aer", "akh", "hou", "xln", "rix", "dom", "grn", "rna", "war", "eld", "thb", "iko", "znr", "khm", "stx", "afr", "mid", "vow", "neo", "snc", "dmu", "lea", "leb", "2ed", "3ed", "sum", "4ed", "5ed", "6ed", "7ed", "8ed", "9ed", "10e"
+        ];
         function fetchSetSymbols() {
             fetch("https://api.scryfall.com/sets")
             .then(response => response.json())
             .then(data => {
-                const allowedSets = [
-                    "pvan", "ITP", "POR", "PO2", "PTK", "S99", "S00", "arn", "atq", "leg", "drk", "fem", "hml", "ice", "all", "mir", "vis", "wth", "tmp", "sth", "exo", "usg", "ulg", "uds", "mmq", "nem", "pcy", "inv", "pls", "apc", "ody", "tor", "jud", "ons", "lgn", "scg", "mrd", "dst", "5dn", "chk", "bok", "sok", "rav", "gpt", "dis", "csp", "tsp", "plc", "fut", "lrw", "mor", "shm", "eve", "ala", "con", "arb", "zen", "wwk", "roe", "som", "mbs", "nph", "isd", "dka", "avr", "rtr", "gtc", "dgm", "ths", "bng", "jou", "ktk", "frf", "dtk", "bfz", "ogw", "soi", "emn", "kld", "aer", "akh", "hou", "xln", "rix", "dom", "grn", "rna", "war", "eld", "thb", "iko", "znr", "khm", "stx", "afr", "mid", "vow", "neo", "snc", "dmu", "lea", "leb", "2ed", "3ed", "sum", "4ed", "5ed", "6ed", "7ed", "8ed", "9ed", "10e"
-                ];
                 let sets = data.data.filter(set => allowedSets.includes(set.code));
                 let container = document.getElementById("setSymbolContainer");
                 sets.forEach(set => {
@@ -95,7 +98,7 @@
         });
 
         function fetchRandomCard() {
-            const apiURL = 'https://api.scryfall.com/cards/random';
+            const apiURL = `https://api.scryfall.com/cards/random?q=set:${allowedSets.join("|")}`;
             fetch(apiURL)
             .then(response => response.json())
             .then(data => {
@@ -129,21 +132,45 @@
 
         function updateComparisonChart(guess) {
             let row = document.createElement('tr');
+            let manaFeedback = compareMana(guess, cardData.mana_cost);
+            let setFeedback = compareSet(guess, cardData.set);
             row.innerHTML = `
                 <td>${guessNumber}</td>
                 <td class="${getClass(guess, cardData.name)}">${guess}</td>
-                <td class="${getClass(guess, cardData.mana_cost)}">${cardData.mana_cost}</td>
+                <td>${manaFeedback}</td>
                 <td class="${getClass(guess, cardData.colors.join(', '))}">${cardData.colors.join(', ')}</td>
                 <td class="${getClass(guess, cardData.rarity)}">${cardData.rarity}</td>
                 <td class="${getClass(guess, cardData.type_line)}">${cardData.type_line}</td>
                 <td class="${getClass(guess, cardData.oracle_text)}">${cardData.oracle_text}</td>
-                <td class="${getClass(guess, cardData.set_name)}">${cardData.set_name}</td>
+                <td>${setFeedback}</td>
             `;
             document.getElementById('guessResults').appendChild(row);
         }
 
         function getClass(guess, actual) {
             return guess.toLowerCase() === actual.toLowerCase() ? 'correct' : 'incorrect';
+        }
+
+        function compareMana(guess, actualMana) {
+            if (!guess.manaValue) return "N/A";
+            if (guess.manaValue === actualMana) {
+                return guess.manaValue + " (Correct)";
+            } else if (guess.manaValue > actualMana) {
+                return guess.manaValue + " (↓ Lower)";
+            } else {
+                return guess.manaValue + " (↑ Higher)";
+            }
+        }
+
+        function compareSet(guess, actualSet) {
+            if (!guess.setYear) return "N/A";
+            if (guess.setYear === actualSet) {
+                return guess.setYear + " (Correct)";
+            } else if (guess.setYear > actualSet) {
+                return guess.setYear + " (← Newer)";
+            } else {
+                return guess.setYear + " (→ Older)";
+            }
         }
     </script>
     <!-- GROUP 1: Game Logic with Comparison Chart - End -->
