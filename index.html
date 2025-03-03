@@ -16,20 +16,15 @@
             max-width: 100%;
             padding: 10px 0;
         }
-        .set-symbol {
-            width: 18px;
-            height: 18px;
-            margin: 2px;
-        }
+        .set-symbol { width: 18px; height: 18px; margin: 2px; }
         .correct { color: green; }
         .incorrect { color: red; }
-        .almost-correct { color: orange; }
         .guess-table { width: 100%; margin-top: 20px; }
         th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
     </style>
 </head>
 <body>
-    <!-- GROUP 2: Set Symbol Bar Logic and Styles -->
+    <!-- GROUP 2: Set Symbol Bar Logic and Styles - Start -->
     <div id="setSymbolContainer"></div>
     <script>
         function fetchSetSymbols() {
@@ -53,8 +48,9 @@
         }
         fetchSetSymbols();
     </script>
+    <!-- GROUP 2: Set Symbol Bar Logic and Styles - End -->
 
-    <!-- GROUP 0: Page Title and Guess Input -->
+    <!-- GROUP 0: Page Title and Guess Input - Start -->
     <h1>Whacky Wheeler Whagic</h1>
     <p>Guess the Magic: The Gathering card!</p>
     <img id="cardImage" src="" alt="Magic Card">
@@ -62,77 +58,94 @@
     <input type="text" id="guessInput" placeholder="Enter card name">
     <button onclick="checkGuess()">Submit Guess</button>
     <p id="feedback"></p>
+    <!-- GROUP 0: Page Title and Guess Input - End -->
 
-   <script>
-    let cardData = null;
-    let guessNumber = 0;
-    const allowedSets = [
-        "pvan", "ITP", "POR", "PO2", "PTK", "S99", "S00", "arn", "atq", "leg", "drk", "fem", "hml", "ice", "all", "mir", "vis", "wth", "tmp", "sth", "exo", "usg", "ulg", "uds", "mmq", "nem", "pcy", "inv", "pls", "apc", "ody", "tor", "jud", "ons", "lgn", "scg", "mrd", "dst", "5dn", "chk", "bok", "sok", "rav", "gpt", "dis", "csp", "tsp", "plc", "fut", "lrw", "mor", "shm", "eve", "ala", "con", "arb", "zen", "wwk", "roe", "som", "mbs", "nph", "isd", "dka", "avr", "rtr", "gtc", "dgm", "ths", "bng", "jou", "ktk", "frf", "dtk", "bfz", "ogw", "soi", "emn", "kld", "aer", "akh", "hou", "xln", "rix", "dom", "grn", "rna", "war", "eld", "thb", "iko", "znr", "khm", "stx", "afr", "mid", "vow", "neo", "snc", "dmu", "lea", "leb", "2ed", "3ed", "sum", "4ed", "5ed", "6ed", "7ed", "8ed", "9ed", "10e"
-    ];
+    <!-- GROUP 1: Game Logic with Comparison Chart - Start -->
+    <div class="guess-table-wrapper">
+        <table class="guess-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Card Name</th>
+                    <th>Mana Value</th>
+                    <th>Colors</th>
+                    <th>Rarity</th>
+                    <th>Type / Supertype</th>
+                    <th>Subtype</th>
+                    <th>Set</th>
+                </tr>
+            </thead>
+            <tbody id="guessResults">
+                <!-- Guess rows will be dynamically inserted here -->
+            </tbody>
+        </table>
+    </div>
+    <script>
+        let cardData = null;
+        let guessNumber = 0;
 
-    document.addEventListener("DOMContentLoaded", function() {
-        fetchRandomCard();
-        document.getElementById("guessInput").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                event.preventDefault();  // Prevent the default action to avoid submitting the form
-                checkGuess();
+        document.addEventListener("DOMContentLoaded", function() {
+            fetchRandomCard();
+            document.getElementById("guessInput").addEventListener("keypress", function(event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();  // Prevent the default action to avoid submitting the form
+                    checkGuess();
+                }
+            });
+        });
+
+        function fetchRandomCard() {
+            const apiURL = 'https://api.scryfall.com/cards/random';
+            fetch(apiURL)
+            .then(response => response.json())
+            .then(data => {
+                cardData = data;
+                document.getElementById("cardImage").src = data.image_uris ? data.image_uris.normal : "https://via.placeholder.com/250";
+                document.getElementById("cardImage").style.display = "none"; // Hide the card initially
+            })
+            .catch(error => {
+                console.error("Error fetching card:", error);
+                document.getElementById("feedback").textContent = "Failed to load a card. Check console for errors.";
+            });
+        }
+
+        function checkGuess() {
+            const userGuess = document.getElementById("guessInput").value.trim().toLowerCase();
+            if (!cardData) {
+                document.getElementById("feedback").textContent = "Error: No card data loaded!";
+                return;
             }
-        });
-    });
 
-    function fetchRandomCard() {
-        const apiURL = `https://api.scryfall.com/cards/random?q=set:${allowedSets.join(" OR set:")}`;
-        fetch(apiURL)
-        .then(response => response.json())
-        .then(data => {
-            cardData = data;
-            document.getElementById("cardImage").src = data.image_uris ? data.image_uris.normal : "https://via.placeholder.com/250";
-            document.getElementById("cardImage").style.display = "none"; // Hide the card initially
-            console.log("Card fetched: ", cardData.name); // For debugging
-        })
-        .catch(error => {
-            console.error("Error fetching card:", error);
-            document.getElementById("feedback").textContent = "Failed to load a card. Check console for errors.";
-        });
-    }
-
-    function checkGuess() {
-        const userGuess = document.getElementById("guessInput").value.trim().toLowerCase();
-        if (!cardData) {
-            document.getElementById("feedback").textContent = "Error: No card data loaded!";
-            return;
+            guessNumber++;
+            updateComparisonChart(userGuess);
+            if (userGuess === cardData.name.toLowerCase()) {
+                document.getElementById("feedback").textContent = "Correct! Fetching new card...";
+                document.getElementById("cardImage").style.display = "block"; // Show the card on correct guess
+                setTimeout(fetchRandomCard, 2000); // Fetch a new card after a correct guess
+            } else {
+                document.getElementById("feedback").textContent = "Incorrect. Try again!";
+            }
         }
 
-        guessNumber++;
-        updateComparisonChart(userGuess);
-        if (userGuess === cardData.name.toLowerCase()) {
-            document.getElementById("feedback").textContent = "Correct! Fetching new card...";
-            document.getElementById("cardImage").style.display = "block"; // Show the card on correct guess
-            setTimeout(fetchRandomCard, 2000); // Fetch a new card after a correct guess
-        } else {
-            document.getElementById("feedback").textContent = "Incorrect. Try again!";
+        function updateComparisonChart(guess) {
+            let row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${guessNumber}</td>
+                <td class="${getClass(guess, cardData.name)}">${guess}</td>
+                <td class="${getClass(guess, cardData.mana_cost)}">${cardData.mana_cost}</td>
+                <td class="${getClass(guess, cardData.colors.join(', '))}">${cardData.colors.join(', ')}</td>
+                <td class="${getClass(guess, cardData.rarity)}">${cardData.rarity}</td>
+                <td class="${getClass(guess, cardData.type_line)}">${cardData.type_line}</td>
+                <td class="${getClass(guess, cardData.oracle_text)}">${cardData.oracle_text}</td>
+                <td class="${getClass(guess, cardData.set_name)}">${cardData.set_name}</td>
+            `;
+            document.getElementById('guessResults').appendChild(row);
         }
-    }
 
-    function updateComparisonChart(guess) {
-        let row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${guessNumber}</td>
-            <td class="${getClass(guess, cardData.name)}">${guess}</td>
-            <td class="${getClass(guess, cardData.mana_cost)}">${cardData.mana_cost}</td>
-            <td class="${getClass(guess, cardData.colors.join(', '))}">${cardData.colors.join(', ')}</td>
-            <td class="${getClass(guess, cardData.rarity)}">${cardData.rarity}</td>
-            <td class="${getClass(guess, cardData.type_line)}">${cardData.type_line}</td>
-            <td class="${getClass(guess, cardData.oracle_text)}">${cardData.oracle_text}</td>
-            <td class="${getClass(guess, cardData.set_name)}">${cardData.set_name}</td>
-        `;
-        document.getElementById('guessResults').appendChild(row);
-    }
-
-    function getClass(guess, actual) {
-        return guess.toLowerCase() === actual.toLowerCase() ? 'correct' : 'incorrect';
-    }
-</script>
-
+        function getClass(guess, actual) {
+            return guess.toLowerCase() === actual.toLowerCase() ? 'correct' : 'incorrect';
+        }
+    </script>
+    <!-- GROUP 1: Game Logic with Comparison Chart - End -->
 </body>
 </html>
