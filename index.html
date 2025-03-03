@@ -21,41 +21,31 @@
             height: 18px;
             margin: 2px;
         }
-        .popup {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.4);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            display: none; /* Initially hidden */
-        }
-        .popup-content {
-            background: white;
-            padding: 20px;
-            border-radius: 5px;
-            width: 80%;
-            max-width: 600px;
-        }
-        .close {
-            cursor: pointer;
-            float: right;
-            font-size: 28px;
-        }
-        .close:hover {
-            color: red;
-        }
     </style>
 </head>
 <body>
-    <!-- GROUP 2: Set Symbol Bar Logic and Styles -->
-    <!-- Begin Group 2 -->
+    <!-- Begin Group 1: Hidden Card and Guess Box -->
+    <h1>Whacky Wheeler Whagic</h1>
+    <p>Guess the Magic: The Gathering card!</p>
+    <img id="cardImage" src="" alt="Magic Card" />
+    <br>
+    <input type="text" id="guessInput" placeholder="Nyx Weaver">
+    <button onclick="checkGuess()">Submit Guess</button>
+    <p id="feedback"></p>
+    <!-- End Group 1 -->
+
+    <!-- Begin Group 2: Set Symbol Bar -->
     <div id="setSymbolContainer"></div>
+    <!-- End Group 2 -->
+
+    <!-- JavaScript for Game Logic and Set Symbols -->
     <script>
+        // Allowed sets for both game logic and set symbols
+        const allowedSets = [
+            "pvan", "ITP", "POR", "PO2", "PTK", "S99", "S00", "arn", "atq", "leg", "drk", "fem", "hml", "ice", "all", "mir", "vis", "wth", "tmp", "sth", "exo", "usg", "ulg", "uds", "mmq", "nem", "pcy", "inv", "pls", "apc", "ody", "tor", "jud", "ons", "lgn", "scg", "mrd", "dst", "5dn", "chk", "bok", "sok", "rav", "gpt", "dis", "csp", "tsp", "plc", "fut", "lrw", "mor", "shm", "eve", "ala", "con", "arb", "zen", "wwk", "roe", "som", "mbs", "nph", "isd", "dka", "avr", "rtr", "gtc", "dgm", "ths", "bng", "jou", "ktk", "frf", "dtk", "bfz", "ogw", "soi", "emn", "kld", "aer", "akh", "hou", "xln", "rix", "dom", "grn", "rna", "war", "eld", "thb", "iko", "znr", "khm", "stx", "afr", "mid", "vow", "neo", "snc", "dmu", "lea", "leb", "2ed", "3ed", "sum", "4ed", "5ed", "6ed", "7ed", "8ed", "9ed", "10e"
+        ];
+
+        // Function to fetch set symbols
         function fetchSetSymbols() {
             fetch("https://api.scryfall.com/sets")
             .then(response => response.json())
@@ -73,52 +63,17 @@
             .catch(error => console.error("Error fetching set symbols:", error));
         }
         fetchSetSymbols();
-    </script>
-    <!-- End Group 2 -->
 
-    <!-- GROUP 0: Page Title and Guess Input -->
-    <!-- Begin Group 0 -->
-    <h1>Whacky Wheeler Whagic</h1>
-    <p>Guess the Magic: The Gathering card!</p>
-    <img id="cardImage" src="" alt="Magic Card">
-    <br>
-    <input type="text" id="guessInput" placeholder="Enter card name">
-    <button onclick="checkGuess()">Submit Guess</button>
-    <p id="feedback"></p>
-    <!-- End Group 0 -->
-
-    <!-- GROUP 1: Popup for Wrong Guesses -->
-    <!-- Begin Group 1 -->
-    <div id="wrongGuessPopup" class="popup">
-        <div class="popup-content">
-            <span class="close" onclick="closePopup()">&times; Close</span>
-            <h3>Wrong Guesses:</h3>
-            <div id="wrongGuessesList"><!-- Wrong guesses will be appended here --></div>
-        </div>
-    </div>
-    <script>
-        function showPopup() {
-            document.getElementById("wrongGuessPopup").style.display = 'flex'; // Show the popup
-        }
-
-        function closePopup() {
-            document.getElementById("wrongGuessPopup").style.display = 'none'; // Hide the popup
-        }
-    </script>
-    <!-- End Group 1 -->
-
-    <!-- GROUP 3: Game Logic -->
-    <!-- Begin Group 3 -->
-    <script>
+        // Game logic for fetching cards and checking guesses
         let cardData = null;
-        const allowedSets = ["pvan", "ITP", "POR", ...]; // Include all set codes
 
         function fetchRandomCard() {
             fetch(`https://api.scryfall.com/cards/random?q=set:${allowedSets.join(" OR set:")}`)
             .then(response => response.json())
             .then(data => {
                 cardData = data;
-                console.log("Random card fetched", data.name);
+                document.getElementById("cardImage").src = data.image_uris ? data.image_uris.normal : "https://via.placeholder.com/250";
+                document.getElementById("cardImage").style.display = "none"; // Hide the card initially
             })
             .catch(error => console.error("Error fetching card:", error));
         }
@@ -132,25 +87,20 @@
 
             if (userGuess === cardData.name.toLowerCase()) {
                 document.getElementById("feedback").textContent = "✔ Correct!";
-                document.getElementById("cardImage").src = cardData.image_uris.normal;
-                document.getElementById("cardImage").style.display = "block"; // Show the card image only on correct guess
+                document.getElementById("cardImage").style.display = "block"; // Show the card on correct guess
+                setTimeout(fetchRandomCard, 15000); // Fetch a new card after 15 seconds
             } else {
                 document.getElementById("feedback").textContent = "✘ Wrong!";
-                setTimeout(() => {
-                    document.getElementById("feedback").textContent = "";
-                }, 2000);
-                showPopup(); // Show the popup on wrong guess
             }
         }
 
         document.getElementById("guessInput").addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
-                checkGuess();
+                checkGuess(); // Trigger guess check on Enter key
             }
         });
 
-        fetchRandomCard(); // Fetch the first random card when the page loads but do not display it
+        fetchRandomCard(); // Fetch the first random card when the page loads
     </script>
-    <!-- End Group 3 -->
 </body>
 </html>
