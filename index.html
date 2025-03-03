@@ -58,128 +58,59 @@
     <p id="feedback"></p>
     <!-- This Ends Group 0 -->
 
-<!-- GROUP 1: Game Logic and Draggable Comparison Popup -->
+<!-- GROUP 1: Game Logic -->
 <script>
     let cardData = null;
-    let wrongGuessCount = 0;
-    const maxGuesses = 13;
-    const allowedSets = ["pvan", "ITP", "POR", "PO2", "PTK", "S99", "S00", "arn", "atq", "leg", "drk", "fem", "hml", "ice", "all", "mir", "vis", "wth", "tmp", "sth", "exo", "usg", "ulg", "uds", "mmq", "nem", "pcy", "inv", "pls", "apc", "ody", "tor", "jud", "ons", "lgn", "scg", "mrd", "dst", "5dn", "chk", "bok", "sok", "rav", "gpt", "dis", "csp", "tsp", "plc", "fut", "lrw", "mor", "shm", "eve", "ala", "con", "arb", "zen", "wwk", "roe", "som", "mbs", "nph", "isd", "dka", "avr", "rtr", "gtc", "dgm", "ths", "bng", "jou", "ktk", "frf", "dtk", "bfz", "ogw", "soi", "emn", "kld", "aer", "akh", "hou", "xln", "rix", "dom", "grn", "rna", "war", "eld", "thb", "iko", "znr", "khm", "stx", "afr", "mid", "vow", "neo", "snc", "dmu", "lea", "leb", "2ed", "3ed", "sum", "4ed", "5ed", "6ed", "7ed", "8ed", "9ed", "10e"];
+
+    document.addEventListener("DOMContentLoaded", function() {
+        fetchRandomCard();
+        document.getElementById("guessInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                checkGuess();
+            }
+        });
+    });
 
     function fetchRandomCard() {
-        fetch(`https://api.scryfall.com/cards/random?q=set:${allowedSets.join(" OR set:")}`)
+        const apiURL = `https://api.scryfall.com/cards/random?q=set:${allowedSets.join(" OR set:")}`;
+        fetch(apiURL)
         .then(response => response.json())
         .then(data => {
             cardData = data;
             document.getElementById("cardImage").src = data.image_uris ? data.image_uris.normal : "https://via.placeholder.com/250";
-            document.getElementById("cardImage").style.display = "none";
-            console.log("Random card fetched", cardData);
+            console.log("Card fetched: ", cardData.name); // For debugging
         })
         .catch(error => console.error("Error fetching card:", error));
     }
 
     function checkGuess() {
         const userGuess = document.getElementById("guessInput").value.trim().toLowerCase();
-        console.log("User guess:", userGuess);
-
         if (!cardData) {
             document.getElementById("feedback").textContent = "Error: No card data loaded!";
             return;
         }
 
-        if (userGuess === cardData.name.toLowerCase()) {
-            document.getElementById("feedback").textContent = "✔ Correct guess!";
-            document.getElementById("cardImage").style.display = "block";
-            setTimeout(fetchRandomCard, 15000);
+        const comparisonResults = compareGuess(userGuess);
+        document.getElementById("feedback").innerHTML = comparisonResults;
+        if (comparisonResults.includes("Correct!")) {
+            document.getElementById("cardImage").style.display = "block"; // Show the card on correct guess
+            setTimeout(fetchRandomCard, 15000); // Fetch a new card after some time
+        }
+    }
+
+    function compareGuess(guess) {
+        // Comparing guessed name for simplicity, extend logic to other attributes
+        if (guess === cardData.name.toLowerCase()) {
+            return "<span style='color: green;'>Correct!</span>";
         } else {
-            document.getElementById("feedback").textContent = "✘ Wrong guess!";
-            handleWrongGuess(userGuess);
+            return "<span style='color: red;'>Incorrect! Try again.</span>";
         }
     }
 
-    function handleWrongGuess(userGuess) {
-        wrongGuessCount++;
-        updateGuessCounter();
-        displayComparison(userGuess);
-
-        if (wrongGuessCount >= maxGuesses) {
-            document.getElementById("feedback").textContent = "Game over! No more guesses left.";
-            document.getElementById("guessInput").disabled = true;
-        }
-    }
-
-    function displayComparison(userGuess) {
-        const popup = document.getElementById("comparisonPopup") || createPopup();
-        const comparisonResult = compareGuess(userGuess);
-        popup.innerHTML = `Guess #${wrongGuessCount}: <strong>${userGuess}</strong> - ${comparisonResult}`;
-        popup.style.display = "block";
-    }
-
-    function compareGuess(userGuess) {
-        // Implement comparison logic based on cardData
-        // For example, you could compare mana cost, color, type etc.
-        // Return a string or HTML that represents this comparison in a color-coded manner
-        return "Comparison results here"; // Placeholder for actual implementation
-    }
-
-    function createPopup() {
-        const popup = document.createElement("div");
-        popup.id = "comparisonPopup";
-        popup.style.position = "absolute";
-        popup.style.left = "50%";
-        popup.style.top = "50%";
-        popup.style.transform = "translate(-50%, -50%)";
-        popup.style.padding = "20px";
-        popup.style.backgroundColor = "rgba(0,0,0,0.8)";
-        popup.style.color = "white";
-        popup.style.borderRadius = "10px";
-        popup.style.zIndex = "1000";
-        document.body.appendChild(popup);
-
-        makeDraggable(popup);
-        return popup;
-    }
-
-    function makeDraggable(elem) {
-        elem.onmousedown = function(event) {
-            let shiftX = event.clientX - elem.getBoundingClientRect().left;
-            let shiftY = event.clientY - elem.getBoundingClientRect().top;
-
-            function moveAt(pageX, pageY) {
-                elem.style.left = pageX - shiftX + 'px';
-                elem.style.top = pageY - shiftY + 'px';
-            }
-
-            function onMouseMove(event) {
-                moveAt(event.pageX, event.pageY);
-            }
-
-            document.addEventListener('mousemove', onMouseMove);
-
-            elem.onmouseup = function() {
-                document.removeEventListener('mousemove', onMouseMove);
-                elem.onmouseup = null;
-            };
-        };
-
-        elem.ondragstart = function() {
-            return false;
-        };
-    }
-
-    function updateGuessCounter() {
-        const guessText = `Guesses left: ${maxGuesses - wrongGuessCount}`;
-        document.getElementById("feedback").textContent = guessText;
-    }
-
-    document.getElementById("guessInput").addEventListener("keypress", function(event) {
-        if (event.key === "Enter") {
-            checkGuess();
-        }
-    });
-
-    fetchRandomCard();
+    const allowedSets = [
+        "pvan", "ITP", "POR", "PO2", "PTK", "S99", "S00", "arn", "atq", "leg", "drk", "fem", "hml", "ice", "all", "mir", "vis", "wth", "tmp", "sth", "exo", "usg", "ulg", "uds", "mmq", "nem", "pcy", "inv", "pls", "apc", "ody", "tor", "jud", "ons", "lgn", "scg", "mrd", "dst", "5dn", "chk", "bok", "sok", "rav", "gpt", "dis", "csp", "tsp", "plc", "fut", "lrw", "mor", "shm", "eve", "ala", "con", "arb", "zen", "wwk", "roe", "som", "mbs", "nph", "isd", "dka", "avr", "rtr", "gtc", "dgm", "ths", "bng", "jou", "ktk", "frf", "dtk", "bfz", "ogw", "soi", "emn", "kld", "aer", "akh", "hou", "xln", "rix", "dom", "grn", "rna", "war", "eld", "thb", "iko", "znr", "khm", "stx", "afr", "mid", "vow", "neo", "snc", "dmu", "lea", "leb", "2ed", "3ed", "sum", "4ed", "5ed", "6ed", "7ed", "8ed", "9ed", "10e"
+    ];
 </script>
-<!-- This Ends Group 1 -->
 
 </body>
 </html>
