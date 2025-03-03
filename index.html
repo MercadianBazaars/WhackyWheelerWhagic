@@ -9,87 +9,40 @@
         #cardImage { width: 250px; height: auto; margin: 20px 0; display: none; }
         #guessInput { padding: 10px; margin: 10px; }
         #feedback { font-weight: bold; margin-top: 10px; }
-        #setSymbolContainer {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            max-width: 100%;
-            padding: 10px 0;
-        }
-        .set-symbol { width: 18px; height: 18px; margin: 2px; }
-        .correct { color: green; }
-        .incorrect { color: red; }
-        .guess-table { width: 100%; margin-top: 20px; border-collapse: collapse; }
-        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
     </style>
 </head>
 <body>
-
-    <!-- Set Symbols -->
-    <div id="setSymbolContainer"></div>
-
-    <!-- Game Title & Input -->
+    <!-- GROUP 1: Hidden Card and Guess Box -->
     <h1>Whacky Wheeler Whagic</h1>
     <p>Guess the Magic: The Gathering card!</p>
-    <img id="cardImage" src="" alt="Magic Card">
+    <img id="cardImage" src="" alt="Magic Card" />
     <br>
-    <input type="text" id="guessInput" placeholder="Enter card name">
-    <button id="submitGuess">Submit Guess</button>
+    <input type="text" id="guessInput" placeholder="Nyx Weaver">
+    <button onclick="checkGuess()">Submit Guess</button>
     <p id="feedback"></p>
-
-    <!-- Guess Table -->
-    <div class="guess-table-wrapper">
-        <table class="guess-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Card Name</th>
-                    <th>Mana Value</th>
-                    <th>Colors</th>
-                    <th>Rarity</th>
-                    <th>Type</th>
-                    <th>Set</th>
-                </tr>
-            </thead>
-            <tbody id="guessResults"></tbody>
-        </table>
-    </div>
-
+    
     <script>
+        // GROUP 1: Game Logic
+        let cardData = null;
+
+        // Allowed sets for both game logic and set symbols
         const allowedSets = [
             "pvan", "ITP", "POR", "PO2", "PTK", "S99", "S00", "arn", "atq", "leg", "drk", "fem", "hml", "ice", "all", "mir", "vis", "wth", "tmp", "sth", "exo", "usg", "ulg", "uds", "mmq", "nem", "pcy", "inv", "pls", "apc", "ody", "tor", "jud", "ons", "lgn", "scg", "mrd", "dst", "5dn", "chk", "bok", "sok", "rav", "gpt", "dis", "csp", "tsp", "plc", "fut", "lrw", "mor", "shm", "eve", "ala", "con", "arb", "zen", "wwk", "roe", "som", "mbs", "nph", "isd", "dka", "avr", "rtr", "gtc", "dgm", "ths", "bng", "jou", "ktk", "frf", "dtk", "bfz", "ogw", "soi", "emn", "kld", "aer", "akh", "hou", "xln", "rix", "dom", "grn", "rna", "war", "eld", "thb", "iko", "znr", "khm", "stx", "afr", "mid", "vow", "neo", "snc", "dmu", "lea", "leb", "2ed", "3ed", "sum", "4ed", "5ed", "6ed", "7ed", "8ed", "9ed", "10e"
         ];
 
-        let cardData = null;
-        let guessNumber = 0;
-
-        document.addEventListener("DOMContentLoaded", function() {
-            fetchRandomCard();
-            document.getElementById("submitGuess").addEventListener("click", checkGuess);
-            document.getElementById("guessInput").addEventListener("keypress", function(event) {
-                if (event.key === "Enter") {
-                    event.preventDefault();
-                    checkGuess();
-                }
-            });
-        });
-
+        // Function to fetch a random card from Scryfall API
         function fetchRandomCard() {
-            const apiURL = `https://api.scryfall.com/cards/random?q=set:(${allowedSets.join(" OR ")})`;
-            fetch(apiURL)
+            fetch(`https://api.scryfall.com/cards/random?q=set:${allowedSets.join(" OR set:")}`)
             .then(response => response.json())
             .then(data => {
                 cardData = data;
-                document.getElementById("cardImage").src = data.image_uris ? data.image_uris.normal : "";
+                document.getElementById("cardImage").src = data.image_uris ? data.image_uris.normal : "https://via.placeholder.com/250";
                 document.getElementById("cardImage").style.display = "none"; // Hide the card initially
-                document.getElementById("feedback").textContent = "A new card has been loaded. Start guessing!";
             })
-            .catch(error => {
-                console.error("Error fetching card:", error);
-                document.getElementById("feedback").textContent = "Failed to load a card.";
-            });
+            .catch(error => console.error("Error fetching card:", error));
         }
 
+        // Function to check the user's guess
         function checkGuess() {
             const userGuess = document.getElementById("guessInput").value.trim().toLowerCase();
             if (!cardData) {
@@ -97,32 +50,68 @@
                 return;
             }
 
-            guessNumber++;
-            updateComparisonChart(userGuess);
-
             if (userGuess === cardData.name.toLowerCase()) {
-                document.getElementById("feedback").textContent = "✔ Correct! Fetching a new card...";
+                document.getElementById("feedback").textContent = "✔ abused magic!";
                 document.getElementById("cardImage").style.display = "block"; // Show the card on correct guess
-                setTimeout(fetchRandomCard, 2000);
+                setTimeout(fetchRandomCard, 15000); // Load a new card after 15 seconds
             } else {
-                document.getElementById("feedback").textContent = "✘ Incorrect. Try again!";
+                document.getElementById("feedback").textContent = "✘ uh-oh stinky!";
             }
         }
 
-        function updateComparisonChart(guess) {
-            let row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${guessNumber}</td>
-                <td>${guess}</td>
-                <td>${cardData.mana_cost || "N/A"}</td>
-                <td>${cardData.colors ? cardData.colors.join(', ') : "N/A"}</td>
-                <td>${cardData.rarity}</td>
-                <td>${cardData.type_line}</td>
-                <td>${cardData.set.toUpperCase()}</td>
-            `;
-            document.getElementById('guessResults').appendChild(row);
+        // ✅ Add Enter key event listener to input field
+        document.getElementById("guessInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                checkGuess(); // Call the function to check the guess
+            }
+        });
+
+        // Fetch the first random card when the page loads
+        fetchRandomCard();
+    </script>
+    <!-- This Ends Group 1 -->
+
+    <!-- GROUP 2: Set Symbol Bar -->
+    <div id="setSymbolContainer"></div>
+
+    <script>
+        // GROUP 2: Set Symbol Bar Logic
+        function fetchSetSymbols() {
+            fetch("https://api.scryfall.com/sets")
+            .then(response => response.json())
+            .then(data => {
+                let sets = data.data.filter(set => allowedSets.includes(set.code));
+                let container = document.getElementById("setSymbolContainer");
+                
+                sets.forEach(set => {
+                    let img = document.createElement("img");
+                    img.src = set.icon_svg_uri;
+                    img.classList.add("set-symbol");
+                    img.alt = set.name;
+                    container.appendChild(img);
+                });
+            })
+            .catch(error => console.error("Error fetching set symbols:", error));
         }
+
+        fetchSetSymbols();
     </script>
 
+    <style>
+        /* GROUP 2: Set Symbol Bar Styles */
+        #setSymbolContainer {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 100%;
+            padding: 10px 0;
+        }
+        .set-symbol {
+            width: 18px;
+            height: 18px;
+            margin: 2px;
+        }
+    </style>
+    <!-- This Ends Group 2 -->
 </body>
 </html>
