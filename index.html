@@ -6,7 +6,10 @@
     <title>Whacky Wheeler Whagic</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-        #cardImage { width: 250px; height: auto; margin: 20px auto; display: none; }
+        #cardImage {
+            width: 250px; height: auto; margin: 20px auto;
+            display: none; /* Ensures it is not visible initially */
+        }
         #guessInput { padding: 10px; margin: 10px; }
         #feedback { font-weight: bold; margin-top: 10px; }
         #setSymbolContainer {
@@ -17,13 +20,11 @@
             padding: 10px 0;
         }
         .set-symbol {
-            width: 18px;
-            height: 18px;
+            width: 18px; height: 18px;
             margin: 2px;
         }
         table {
-            width: 100%;
-            border-collapse: collapse;
+            width: 100%; border-collapse: collapse;
             margin-top: 20px;
         }
         th, td {
@@ -31,15 +32,15 @@
             padding: 8px;
             text-align: center;
         }
-        th {
-            background-color: #f4f4f4;
-        }
+        th { background-color: #f4f4f4; }
     </style>
 </head>
 <body>
-    <!-- GROUP 2: Set Symbol Bar Logic and Styles -->
+    <!-- Set Symbol Bar -->
     <div id="setSymbolContainer"></div>
     <script>
+        const allowedSets = ["pvan", "ITP", "POR", ...]; // all allowed set codes
+
         function fetchSetSymbols() {
             fetch("https://api.scryfall.com/sets")
             .then(response => response.json())
@@ -52,7 +53,6 @@
                     img.classList.add("set-symbol");
                     img.alt = set.name;
                     container.appendChild(img);
-                    console.log("Set symbol added:", set.name);
                 });
             })
             .catch(error => console.error("Error fetching set symbols:", error));
@@ -60,31 +60,18 @@
         fetchSetSymbols();
     </script>
 
-    <!-- GROUP 0: Page Title and Guess Input -->
+    <!-- Page Title and Guess Input -->
     <h1>Whacky Wheeler Whagic</h1>
     <p>Guess the Magic: The Gathering card!</p>
-    <img id="cardImage" src="" alt="Magic Card" />
+    <img id="cardImage" src="" alt="Magic Card">
     <br>
     <input type="text" id="guessInput" placeholder="Enter card name">
     <button onclick="checkGuess()">Submit Guess</button>
     <p id="feedback"></p>
 
-    <!-- GROUP 1: Game Logic -->
+    <!-- Game Logic -->
     <script>
         let cardData = null;
-        const allowedSets = ["pvan", "ITP", "POR", "PO2", "PTK", "S99", "S00", "arn", "atq", "leg", 
-                             "drk", "fem", "hml", "ice", "all", "mir", "vis", "wth", "tmp", "sth", 
-                             "exo", "usg", "ulg", "uds", "mmq", "nem", "pcy", "inv", "pls", "apc", 
-                             "ody", "tor", "jud", "ons", "lgn", "scg", "mrd", "dst", "5dn", "chk", 
-                             "bok", "sok", "rav", "gpt", "dis", "csp", "tsp", "plc", "fut", "lrw", 
-                             "mor", "shm", "eve", "ala", "con", "arb", "zen", "wwk", "roe", "som", 
-                             "mbs", "nph", "isd", "dka", "avr", "rtr", "gtc", "dgm", "ths", "bng", 
-                             "jou", "ktk", "frf", "dtk", "bfz", "ogw", "soi", "emn", "kld", "aer", 
-                             "akh", "hou", "xln", "rix", "dom", "grn", "rna", "war", "eld", "thb", 
-                             "iko", "znr", "khm", "stx", "afr", "mid", "vow", "neo", "snc", "dmu", 
-                             "lea", "leb", "2ed", "3ed", "sum", "4ed", "5ed", "6ed", "7ed", "8ed", 
-                             "9ed", "10e"
-                            ];
 
         function fetchRandomCard() {
             fetch(`https://api.scryfall.com/cards/random?q=set:${allowedSets.join(" OR set:")}`)
@@ -92,6 +79,9 @@
             .then(data => {
                 cardData = data;
                 console.log("Random card fetched", data.name); // Log for debugging
+                // Remove any pre-set image source or style changes
+                document.getElementById("cardImage").style.display = "none";
+                document.getElementById("cardImage").src = "";
             })
             .catch(error => console.error("Error fetching card:", error));
         }
