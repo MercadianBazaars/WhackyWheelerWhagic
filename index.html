@@ -108,7 +108,10 @@
                 document.getElementById("cardImage").style.display = "block";
                 setTimeout(fetchRandomCard, 15000);
             } else {
-                document.getElementById("feedback").textContent = "✘ Uh-Oh Stinky!.";
+                document.getElementById("feedback").textContent = "✘ Uh-Oh Stinky!";
+                setTimeout(() => {
+                    document.getElementById("feedback").textContent = "";
+                }, 2000);
             }
         }
 
