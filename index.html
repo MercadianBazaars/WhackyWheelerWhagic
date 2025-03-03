@@ -58,57 +58,94 @@
     <p id="feedback"></p>
     <!-- This Ends Group 0 -->
 
-    <!-- GROUP 1: Game Logic -->
-    <script>
-        let cardData = null;
-        const allowedSets = [
-            "pvan", "ITP", "POR", "PO2", "PTK", "S99", "S00", "arn", "atq", "leg", "drk", "fem", "hml", "ice", "all", "mir", "vis", "wth", "tmp", "sth", "exo", "usg", "ulg", "uds", "mmq", "nem", "pcy", "inv", "pls", "apc", "ody", "tor", "jud", "ons", "lgn", "scg", "mrd", "dst", "5dn", "chk", "bok", "sok", "rav", "gpt", "dis", "csp", "tsp", "plc", "fut", "lrw", "mor", "shm", "eve", "ala", "con", "arb", "zen", "wwk", "roe", "som", "mbs", "nph", "isd", "dka", "avr", "rtr", "gtc", "dgm", "ths", "bng", "jou", "ktk", "frf", "dtk", "bfz", "ogw", "soi", "emn", "kld", "aer", "akh", "hou", "xln", "rix", "dom", "grn", "rna", "war", "eld", "thb", "iko", "znr", "khm", "stx", "afr", "mid", "vow", "neo", "snc", "dmu", "lea", "leb", "2ed", "3ed", "sum", "4ed", "5ed", "6ed", "7ed", "8ed", "9ed", "10e"
-        ];
+ <!-- GROUP 1: Game Logic -->
+<script>
+    let cardData = null;
+    let wrongGuessCount = 0;
+    const maxGuesses = 13;
+    const allowedSets = [
+        "pvan", "ITP", "POR", "PO2", "PTK", "S99", "S00", "arn", "atq", "leg", "drk", "fem", "hml", "ice", "all", "mir", "vis", "wth", "tmp", "sth", "exo", "usg", "ulg", "uds", "mmq", "nem", "pcy", "inv", "pls", "apc", "ody", "tor", "jud", "ons", "lgn", "scg", "mrd", "dst", "5dn", "chk", "bok", "sok", "rav", "gpt", "dis", "csp", "tsp", "plc", "fut", "lrw", "mor", "shm", "eve", "ala", "con", "arb", "zen", "wwk", "roe", "som", "mbs", "nph", "isd", "dka", "avr", "rtr", "gtc", "dgm", "ths", "bng", "jou", "ktk", "frf", "dtk", "bfz", "ogw", "soi", "emn", "kld", "aer", "akh", "hou", "xln", "rix", "dom", "grn", "rna", "war", "eld", "thb", "iko", "znr", "khm", "stx", "afr", "mid", "vow", "neo", "snc", "dmu", "lea", "leb", "2ed", "3ed", "sum", "4ed", "5ed", "6ed", "7ed", "8ed", "9ed", "10e"
+    ];
 
-        function fetchRandomCard() {
-            fetch(`https://api.scryfall.com/cards/random?q=set:${allowedSets.join(" OR set:")}`)
-            .then(response => response.json())
-            .then(data => {
-                cardData = data;
-                document.getElementById("cardImage").src = data.image_uris ? data.image_uris.normal : "https://via.placeholder.com/250";
-                document.getElementById("cardImage").style.display = "none"; // Hide the card initially
-                console.log("Random card fetched"); // Debugging: Log when a card is fetched
-            })
-            .catch(error => console.error("Error fetching card:", error));
+    function fetchRandomCard() {
+        fetch(`https://api.scryfall.com/cards/random?q=set:${allowedSets.join(" OR set:")}`)
+        .then(response => response.json())
+        .then(data => {
+            cardData = data;
+            document.getElementById("cardImage").src = data.image_uris ? data.image_uris.normal : "https://via.placeholder.com/250";
+            document.getElementById("cardImage").style.display = "none"; // Hide the card initially
+            console.log("Random card fetched"); // Debugging: Log when a card is fetched
+        })
+        .catch(error => console.error("Error fetching card:", error));
+    }
+
+    function checkGuess() {
+        const userGuess = document.getElementById("guessInput").value.trim().toLowerCase();
+        console.log("User guess:", userGuess); // Debugging: Log the user guess
+
+        if (!cardData) {
+            document.getElementById("feedback").textContent = "Error: No card data loaded!";
+            return;
         }
 
-        function checkGuess() {
-            const userGuess = document.getElementById("guessInput").value.trim().toLowerCase();
-            console.log("User guess:", userGuess); // Debugging: Log the user guess
-
-            if (!cardData) {
-                document.getElementById("feedback").textContent = "Error: No card data loaded!";
-                return;
-            }
-
-            if (userGuess === cardData.name.toLowerCase()) {
-                document.getElementById("feedback").textContent = "✔ abused magic!";
-                document.getElementById("cardImage").style.display = "block";
-                setTimeout(fetchRandomCard, 15000);
-            } else {
-                document.getElementById("feedback").textContent = "✘ uh-oh stinky!";
-                setTimeout(function() {
-                    document.getElementById("feedback").textContent = ""; // Clear the feedback message after 2 seconds
-                    console.log("Feedback cleared"); // Debugging: Log when the feedback is cleared
-                }, 2000);
-            }
+        if (userGuess === cardData.name.toLowerCase()) {
+            document.getElementById("feedback").textContent = "✔ abused magic!";
+            document.getElementById("cardImage").style.display = "block";
+            setTimeout(fetchRandomCard, 15000);
+        } else {
+            document.getElementById("feedback").textContent = "✘ uh-oh stinky!";
+            handleWrongGuess();
+            setTimeout(function() {
+                document.getElementById("feedback").textContent = ""; // Clear the feedback message after 2 seconds
+                console.log("Feedback cleared"); // Debugging: Log when the feedback is cleared
+            }, 2000);
         }
+    }
 
-        document.getElementById("guessInput").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                checkGuess();
-            }
-        });
+    function handleWrongGuess() {
+        wrongGuessCount++;
+        if (wrongGuessCount === 1) { // First wrong guess triggers the popup
+            displayPopup();
+        }
+        updateGuessCounter();
 
-        // Fetch the first random card when the page loads
-        fetchRandomCard();
-    </script>
-    <!-- This Ends Group 1 -->
+        if (wrongGuessCount >= maxGuesses) {
+            document.getElementById("feedback").textContent = "Game over! No more guesses left.";
+            document.getElementById("guessInput").disabled = true; // Disable further input after max guesses
+        }
+    }
+
+    function displayPopup() {
+        const popup = document.createElement("div");
+        popup.textContent = "Uh-oh! That's not right. Keep trying!";
+        popup.style.position = "fixed";
+        popup.style.left = "50%";
+        popup.style.top = "20%";
+        popup.style.transform = "translate(-50%, -50%)";
+        popup.style.padding = "20px";
+        popup.style.backgroundColor = "white";
+        popup.style.border = "2px solid black";
+        popup.style.zIndex = "1000";
+        document.body.appendChild(popup);
+        setTimeout(() => { document.body.removeChild(popup); }, 3000); // Remove popup after 3 seconds
+    }
+
+    function updateGuessCounter() {
+        const guessText = `Guesses left: ${maxGuesses - wrongGuessCount}`;
+        document.getElementById("feedback").textContent = guessText;
+    }
+
+    document.getElementById("guessInput").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            checkGuess();
+        }
+    });
+
+    // Fetch the first random card when the page loads
+    fetchRandomCard();
+</script>
+<!-- This Ends Group 1 -->
+
 </body>
 </html>
 
