@@ -71,7 +71,95 @@
     <p id="feedback"></p>
     <!-- This Ends Group 0 -->
 
-   
+    <!-- GROUP 3: Draggable Popup for Wrong Guesses -->
+<div id="wrongGuessesPopup" style="display:none;">
+    <div id="popupHeader">
+        <span onclick="closeWrongGuessesPopup()" style="cursor:pointer;">&times; Close</span>
+        <h2>Wrong Guesses</h2>
+    </div>
+    <div id="popupBody">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Card Name</th>
+                    <th>Mana Value</th>
+                    <th>Colors</th>
+                    <th>Rarity</th>
+                    <th>Type / Supertype</th>
+                    <th>Subtype</th>
+                    <th>Set</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Content added dynamically -->
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+function showWrongGuessesPopup() {
+    document.getElementById('wrongGuessesPopup').style.display = 'block';
+    makePopupDraggable();
+}
+
+function closeWrongGuessesPopup() {
+    document.getElementById('wrongGuessesPopup').style.display = 'none';
+}
+
+function makePopupDraggable() {
+    var popup = document.getElementById("wrongGuessesPopup");
+    var header = document.getElementById("popupHeader");
+    header.onmousedown = function(event) {
+        var shiftX = event.clientX - popup.getBoundingClientRect().left;
+        var shiftY = event.clientY - popup.getBoundingClientRect().top;
+
+        moveAt(event.pageX, event.pageY);
+
+        function moveAt(pageX, pageY) {
+            popup.style.left = pageX - shiftX + 'px';
+            popup.style.top = pageY - shiftY + 'px';
+        }
+
+        function onMouseMove(event) {
+            moveAt(event.pageX, event.pageY);
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+
+        header.onmouseup = function() {
+            document.removeEventListener('mousemove', onMouseMove);
+            header.onmouseup = null;
+        };
+    };
+
+    header.ondragstart = function() {
+        return false;
+    };
+}
+</script>
+<style>
+#wrongGuessesPopup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    border: 1px solid #ddd;
+    z-index: 1000;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,.1);
+}
+#popupHeader {
+    cursor: move;
+    background-color: #f4f4f4;
+    padding: 10px 20px;
+}
+#popupBody {
+    padding: 20px;
+}
+</style>
+<!-- This Ends Group 3 -->
 
 
     <!-- GROUP 1: Game Logic -->
