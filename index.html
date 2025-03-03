@@ -58,7 +58,7 @@
     <p id="feedback"></p>
     <!-- This Ends Group 0 -->
 
-<!-- GROUP 1: Game Logic and Draggable Popup -->
+<!-- GROUP 1: Game Logic and Draggable Comparison Popup -->
 <script>
     let cardData = null;
     let wrongGuessCount = 0;
@@ -72,7 +72,7 @@
             cardData = data;
             document.getElementById("cardImage").src = data.image_uris ? data.image_uris.normal : "https://via.placeholder.com/250";
             document.getElementById("cardImage").style.display = "none";
-            console.log("Random card fetched");
+            console.log("Random card fetched", cardData);
         })
         .catch(error => console.error("Error fetching card:", error));
     }
@@ -92,11 +92,11 @@
             setTimeout(fetchRandomCard, 15000);
         } else {
             document.getElementById("feedback").textContent = "✘ Wrong guess!";
-            handleWrongGuess();
+            handleWrongGuess(userGuess);
         }
     }
 
-    function handleWrongGuess() {
+    function handleWrongGuess(userGuess) {
         wrongGuessCount++;
         updateGuessCounter();
         displayComparison(userGuess);
@@ -109,8 +109,16 @@
 
     function displayComparison(userGuess) {
         const popup = document.getElementById("comparisonPopup") || createPopup();
-        popup.innerHTML = `Guess #${wrongGuessCount}: <strong>${userGuess}</strong> - Compare result here.`; // Implement actual comparison logic
+        const comparisonResult = compareGuess(userGuess);
+        popup.innerHTML = `Guess #${wrongGuessCount}: <strong>${userGuess}</strong> - ${comparisonResult}`;
         popup.style.display = "block";
+    }
+
+    function compareGuess(userGuess) {
+        // Implement comparison logic based on cardData
+        // For example, you could compare mana cost, color, type etc.
+        // Return a string or HTML that represents this comparison in a color-coded manner
+        return "Comparison results here"; // Placeholder for actual implementation
     }
 
     function createPopup() {
