@@ -111,3 +111,44 @@
     <!-- This Ends Group 1 -->
 </body>
 </html>
+
+<!-- GROUP 3: Popup and Guess Count Handler -->
+<script>
+    let wrongGuessCount = 0;
+    const maxGuesses = 13;
+
+    function handleWrongGuess() {
+        wrongGuessCount++;
+        if (wrongGuessCount === 1) { // First wrong guess triggers the popup
+            displayPopup();
+        }
+        updateGuessCounter();
+
+        if (wrongGuessCount >= maxGuesses) {
+            document.getElementById("feedback").textContent = "Game over! No more guesses left.";
+            document.getElementById("guessInput").disabled = true; // Disable further input after max guesses
+        }
+    }
+
+    function displayPopup() {
+        const popup = document.createElement("div");
+        popup.textContent = "Uh-oh! That's not right. Keep trying!";
+        popup.style.position = "fixed";
+        popup.style.left = "50%";
+        popup.style.top = "20%";
+        popup.style.transform = "translate(-50%, -50%)";
+        popup.style.padding = "20px";
+        popup.style.backgroundColor = "white";
+        popup.style.border = "2px solid black";
+        popup.style.zIndex = "1000";
+        document.body.appendChild(popup);
+        setTimeout(() => { document.body.removeChild(popup); }, 3000); // Remove popup after 3 seconds
+    }
+
+    function updateGuessCounter() {
+        const guessText = `Guesses left: ${maxGuesses - wrongGuessCount}`;
+        document.getElementById("feedback").textContent = guessText;
+    }
+</script>
+<!-- This Ends Group 3 -->
+
