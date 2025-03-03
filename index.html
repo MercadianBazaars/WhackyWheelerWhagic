@@ -100,15 +100,15 @@
         function checkGuess() {
             const userGuess = document.getElementById("guessInput").value.trim().toLowerCase();
             if (!cardData) {
-                document.getElementById("feedback").textContent = "Error: No card data loaded!";
+                document.getElementById("feedback").textContent = "Mind Sculpted: No card data loaded!";
                 return;
             }
             if (userGuess === cardData.name.toLowerCase()) {
-                document.getElementById("feedback").textContent = "✔ Correct!";
+                document.getElementById("feedback").textContent = "✔ Abused Magic";
                 document.getElementById("cardImage").style.display = "block";
                 setTimeout(fetchRandomCard, 15000);
             } else {
-                document.getElementById("feedback").textContent = "✘ Incorrect! Try again.";
+                document.getElementById("feedback").textContent = "✘ Uh-Oh Stinky!.";
             }
         }
 
